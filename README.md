@@ -119,18 +119,3 @@ The repository depends on, but does not redistribute, CWEval
 (<https://github.com/uiuc-kang-lab/SecCodePLT>), EvalPlus, and the public
 vulnerability datasets listed in `DATA.md`.  Their licenses apply to those
 assets.
-
-## Citation
-
-(Placeholder; the camera-ready author list and DOI will replace it.)
-
-```bibtex
-@inproceedings{secbart2027,
-  title     = {SecBaRT: Bottleneck-Guided Reinforcement Learning for Secure Code Generation},
-  author    = {Anonymous},
-  booktitle = {Proceedings of the ACM International Conference on the Foundations of Software Engineering (FSE)},
-  year      = {2027}
-}
-```
-
-The citation will be updated with the camera-ready author list.
