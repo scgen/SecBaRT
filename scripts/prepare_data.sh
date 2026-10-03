@@ -3,7 +3,7 @@
 #
 # The data is split into three Hugging Face dataset repositories; each can be
 # mirrored independently:
-#   SECBART_SFT_REPO     (default scgen/SecBaRT-sft)
+#   SECBART_SFT_REPO     (default scgen/SecBaRT-supervised-fine-tuning)
 #   SECBART_LABELS_REPO  (default scgen/SecBaRT-token-labels)
 #   SECBART_SCPLT_REPO   (default scgen/SecBaRT-rl-tasks)
 #
@@ -12,7 +12,7 @@
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
 
-SFT_REPO="${SECBART_SFT_REPO:-${SECBART_DATA_REPO:-scgen/SecBaRT-sft}}"
+SFT_REPO="${SECBART_SFT_REPO:-${SECBART_DATA_REPO:-scgen/SecBaRT-supervised-fine-tuning}}"
 LABELS_REPO="${SECBART_LABELS_REPO:-scgen/SecBaRT-token-labels}"
 SCPLT_REPO="${SECBART_SCPLT_REPO:-scgen/SecBaRT-rl-tasks}"
 BASE_MODEL_REPO="${BASE_MODEL_REPO:-Qwen/Qwen2.5-Coder-7B}"

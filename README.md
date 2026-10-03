@@ -53,7 +53,7 @@ git clone https://github.com/scgen/SecBaRT && cd SecBaRT
 bash scripts/0_setup.sh
 
 # 2. assets (see DATA.md for download links / reconstruction)
-#    hf download scgen/SecBaRT-sft train-sft.json --repo-type dataset \
+#    hf download scgen/SecBaRT-supervised-fine-tuning train-sft.json --repo-type dataset \
 #        --local-dir data/wcstatic_synthref_merge
 #    data/wcstatic_synthref_merge/train-sft.json               (40,360 triples)
 #    data/wcstatic_synthref_merge/token_labels_v7_ord.jsonl    (token labels)

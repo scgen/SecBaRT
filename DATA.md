@@ -100,13 +100,13 @@ The prepared data is split across three Hugging Face dataset repositories:
 
 | Repository | File | Status |
 |---|---|---|
-| `scgen/SecBaRT-sft` | `train-sft.json` | available |
+| `scgen/SecBaRT-supervised-fine-tuning` | `train-sft.json` | available |
 | `scgen/SecBaRT-token-labels` | `token_labels_v7_ord.jsonl` | published separately |
 | `scgen/SecBaRT-rl-tasks` | `filtered-test_cases.json` | published separately |
 
 ```bash
 # supervised pool
-hf download scgen/SecBaRT-sft train-sft.json --repo-type dataset \
+hf download scgen/SecBaRT-supervised-fine-tuning train-sft.json --repo-type dataset \
     --local-dir data/wcstatic_synthref_merge
 
 # token labels
