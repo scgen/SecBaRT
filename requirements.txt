@@ -1,0 +1,19 @@
+# Python 3.10+ is required (3.11/3.12 tested).
+# Install torch from the CUDA 12.1 wheel index when needed, e.g.
+#   pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+torch==2.5.1
+transformers==4.57.6
+tokenizers==0.22.2
+peft==0.14.0
+accelerate==1.13.0
+datasets==4.8.5
+bitsandbytes==0.50.2
+vllm==0.7.2
+fastapi>=0.115
+uvicorn>=0.30
+requests>=2.31
+numpy>=1.26,<2
+safetensors>=0.4
+
+# Optional: HumanEval+ / MBPP+ evaluation (scripts/5_eval_functional.sh)
+# evalplus>=0.3

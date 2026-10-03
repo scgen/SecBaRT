@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+work/
+runs/
+models/
+data/wcstatic_synthref_merge/
+third_party/CWEval/
+third_party/SecCodePLT_Plus/
+*.log
+.DS_Store
