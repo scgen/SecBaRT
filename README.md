@@ -27,20 +27,17 @@ Stage IV performs bottleneck-guided inference in a single decoding pass.*
 |---|---|---|
 | I | `scripts/1_sft.sh` | Bottleneck SFT: vulnerable reconstruction + secure generation on the 40,360-triple pool |
 | II | `scripts/2_token_head.sh` | Train the token-level scoring head (ordinal objective) on the frozen SFT seed |
-| III | `scripts/3_rl_dualarm.sh` | Dual-arm RL with functional + security execution feedback |
-| III (token-shaped) | `scripts/3b_rl_dualarm_tkh.sh` | Dual-arm RL that adds the frozen head's token-level security reward |
+| III | `scripts/3_rl_token_reward.sh` | Dual-arm RL from the SFT seed with functional + security execution feedback and the frozen head's token-level security reward |
 | IV | `scripts/4_eval_cweval.sh` | Generate on CWEval with the bottleneck server and score with the official harness |
 | optional | `scripts/5_eval_functional.sh` | HumanEval+ / MBPP+ with EvalPlus |
 
-Stage III has two entry points that share the same data, rewards, and
-evaluation path: the sequence-level dual-arm objective and the PPO variant that
-adds the frozen head's token-level reward (the full method).  Reproducing the
-ablation table means running both.
-
-The scoring head is trained once on the frozen SFT seed and is not updated
-during RL.  CWEval evaluation counts every task in the denominator: if
-generation fails, a placeholder file is written so the task is scored as a
-failure instead of silently dropping out of the benchmark.
+Stage III starts from the SFT seed and uses the frozen head to turn the
+executable feedback into position-level credit: functional and security tests
+score the completed program, while the token-level security reward marks which
+generation decisions were responsible for the outcome.  The scoring head is
+trained once and is not updated during RL.  CWEval evaluation counts every task
+in the denominator: if generation fails, a placeholder file is written so the
+task is scored as a failure instead of silently dropping out of the benchmark.
 
 ## Quick start
 
@@ -62,7 +59,7 @@ bash scripts/0_setup.sh
 # 3. train
 CUDA_VISIBLE_DEVICES=0 bash scripts/1_sft.sh
 CUDA_VISIBLE_DEVICES=0 bash scripts/2_token_head.sh
-CUDA_VISIBLE_DEVICES=0 bash scripts/3_rl_dualarm.sh
+CUDA_VISIBLE_DEVICES=0 bash scripts/3_rl_token_reward.sh
 
 # 4. evaluate (requires docker with the public co1lin/cweval:latest image)
 CUDA_VISIBLE_DEVICES=0 bash scripts/4_eval_cweval.sh

@@ -30,7 +30,7 @@ export MODEL_DIR SFT_DATA TOKEN_LABELS SECPLT_CASES CWEVAL_REPO
 # ---- outputs ---------------------------------------------------------------
 SFT_OUT="${SFT_OUT:-${WORK_DIR}/sft_wcstatic_synthref_merge}"
 HEAD_OUT="${HEAD_OUT:-${WORK_DIR}/token_head_v7_ord}"
-RL_OUT="${RL_OUT:-${WORK_DIR}/rl_dualarm_mask_s768}"
+RL_OUT="${RL_OUT:-${WORK_DIR}/rl_token_reward}"
 export SFT_OUT HEAD_OUT RL_OUT
 
 log() { printf '[%s] %s\n' "$(date '+%F %T')" "$*"; }

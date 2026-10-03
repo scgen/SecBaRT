@@ -57,18 +57,17 @@ CUDA_VISIBLE_DEVICES=0 bash scripts/2_token_head.sh
 | Seed | 42 |
 
 The script copies epoch 40 to `token_head_rl.pt`; this frozen head is used in
-`scripts/3b_rl_dualarm_tkh.sh`.
+`scripts/3_rl_token_reward.sh`.
 
-## 3. Dual-arm RL (Stage III)
-
-Sequence-level objective (main configuration):
+## 3. Token-reward dual-arm RL (Stage III)
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 bash scripts/3_rl_dualarm.sh
+CUDA_VISIBLE_DEVICES=0 bash scripts/3_rl_token_reward.sh
 ```
 
 | Setting | Value |
 |---|---|
+| Seed model | the SFT checkpoint from Stage I |
 | RL pool | SecCodePLT+ `filtered-test_cases.json` (400 tasks) |
 | Steps | 768 |
 | Batch / samples per arm (`k`) | 4 / 4 |
@@ -81,24 +80,17 @@ CUDA_VISIBLE_DEVICES=0 bash scripts/3_rl_dualarm.sh
 | Secure arm input | prompt + `<vuln>`x4 + `<secu>` |
 | Vulnerable arm input | prompt + `<vuln>`x4 (task input masked) |
 | Rewards | `R_sec = Pass_func * Pass_sec`, `R_vul = Pass_func * (1 - Pass_sec)` |
-| Advantages | group-normalised per (arm, task); no value head |
+| Token-level reward | `alpha * (sigma(w^T h_t + b) - 0.5)` added to the secure arm, `w_head=0.5` |
+| Policy optimisation | PPO with `gamma=1.0`, `lambda=0.95`, `clip_eps=0.2`, `vf_coef=0.5` |
 
-Token-shaped variant (adds the frozen head's token reward to the secure arm):
-
-```bash
-CUDA_VISIBLE_DEVICES=0 bash scripts/3b_rl_dualarm_tkh.sh
-```
-
-It uses PPO with `gamma=1.0`, `lambda=0.95`, `clip_eps=0.2`, `vf_coef=0.5`,
-`w_head=0.5`, and centres the head's sigmoid output at the neutral midpoint
-`0.5` before adding it to the sequence-level reward.
-
-Both runs export `merged_hf_model` at the end of training.
+The frozen head scores the hidden states that the policy already computes, so
+the position-level reward adds no extra forward pass.  The run exports
+`merged_hf_model` at the end of training.
 
 ## 4. Evaluation
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 bash scripts/4_eval_cweval.sh work/rl_dualarm_mask_s768/merged_hf_model 0 8123
+CUDA_VISIBLE_DEVICES=0 bash scripts/4_eval_cweval.sh work/rl_token_reward/merged_hf_model 0 8123
 ```
 
 The script starts the bottleneck vLLM server, generates greedy completions for
@@ -121,7 +113,7 @@ HumanEval+/MBPP+ are optional:
 
 ```bash
 pip install evalplus
-CUDA_VISIBLE_DEVICES=0 bash scripts/5_eval_functional.sh work/rl_dualarm_tkh_s768/merged_hf_model 0 8124
+CUDA_VISIBLE_DEVICES=0 bash scripts/5_eval_functional.sh work/rl_token_reward/merged_hf_model 0 8124
 ```
 
 ## 5. Expected variation
@@ -134,9 +126,9 @@ CUDA_VISIBLE_DEVICES=0 bash scripts/5_eval_functional.sh work/rl_dualarm_tkh_s76
 * RL runs are stochastic by design (temperature 0.8, 4 samples per task per
   arm).  The seed is fixed to 42; reruns with different seeds are expected to
   vary by a few tasks.
-* The token-shaped variant and the sequence-level variant share the seed
-  model, data, and reward definitions, so the difference between them
-  isolates the token-level shaping channel.
+* The token-level reward is computed from the frozen head, so reruns with the
+  same seed model produce the same reward definition; remaining variation
+  comes from the stochastic rollouts.
 
 ## 6. Troubleshooting
 
