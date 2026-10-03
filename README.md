@@ -2,7 +2,7 @@
 
 Official code release for **SecBaRT**, a bottleneck-based reinforcement
 learning framework for secure code generation.  The repository contains the
-core training and evaluation pipeline needed to reproduce the main results;
+core training and evaluation pipeline needed to run the method end to end;
 baselines are intentionally not included.
 
 SecBaRT learns a task-conditioned *bottleneck* state before decoding.  During
@@ -13,20 +13,13 @@ the vulnerable code.  A token-level scoring head is trained on the same hidden
 states, frozen, and reused during dual-arm RL, where functional and security
 tests provide the executable reward.
 
-## Main results
+![SecBaRT overview](assets/architecture.png)
 
-Evaluated on CWEval (119 tasks, greedy decoding) with Qwen2.5-Coder-7B:
-
-| Benchmark | Metric | Score |
-|---|---|---|
-| CWEval | Func@1 | 67.23 |
-| CWEval | Sec@1 | 66.39 |
-| CWEval | Func-Sec@1 | 57.98 |
-| HumanEval+ | Pass@1 | 83.54 |
-| MBPP+ | Pass@1 | 79.89 |
-
-`scripts/collect_metrics.py` writes these numbers into `metric.json` after an
-evaluation run.
+*Overview: Stage I constructs self-contained tasks and semantic token labels,
+Stage II trains the vulnerable reconstruction, secure generation, and the
+token scoring head under the bottleneck attention layout, Stage III optimizes
+the policy with executable feedback and token-level security rewards, and
+Stage IV performs bottleneck-guided inference in a single decoding pass.*
 
 ## Pipeline
 
@@ -34,8 +27,8 @@ evaluation run.
 |---|---|---|
 | I | `scripts/1_sft.sh` | Bottleneck SFT: vulnerable reconstruction + secure generation on the 40,360-triple pool |
 | II | `scripts/2_token_head.sh` | Train the token-level scoring head (ordinal objective) on the frozen SFT seed |
-| III | `scripts/3_rl_dualarm.sh` | Dual-arm group-normalised RL with functional + security execution feedback |
-| III (token-shaped) | `scripts/3b_rl_dualarm_tkh.sh` | Dual-arm PPO that adds the frozen head's token-level security reward |
+| III | `scripts/3_rl_dualarm.sh` | Dual-arm RL with functional + security execution feedback |
+| III (token-shaped) | `scripts/3b_rl_dualarm_tkh.sh` | Dual-arm RL that adds the frozen head's token-level security reward |
 | IV | `scripts/4_eval_cweval.sh` | Generate on CWEval with the bottleneck server and score with the official harness |
 | optional | `scripts/5_eval_functional.sh` | HumanEval+ / MBPP+ with EvalPlus |
 
@@ -43,6 +36,11 @@ Stage III has two entry points that share the same data, rewards, and
 evaluation path: the sequence-level dual-arm objective and the PPO variant that
 adds the frozen head's token-level reward (the full method).  Reproducing the
 ablation table means running both.
+
+The scoring head is trained once on the frozen SFT seed and is not updated
+during RL.  CWEval evaluation counts every task in the denominator: if
+generation fails, a placeholder file is written so the task is scored as a
+failure instead of silently dropping out of the benchmark.
 
 ## Quick start
 
@@ -100,19 +98,6 @@ REPRODUCE.md             step-by-step reproduction notes and expected numbers
   `--gpu_memory_utilization 0.9` on one GPU.
 * Smaller GPUs can be used with a LoRA rank above zero, but the released
   numbers correspond to the full fine-tuning configuration above.
-
-## Notes on the paper
-
-* The main checkpoint is produced by the **dual-arm GRPO-style** objective
-  (`scripts/3_rl_dualarm.sh`), which normalises advantages within each
-  (arm, task) group and uses no value head.  `scripts/3b_rl_dualarm_tkh.sh`
-  runs the PPO + GAE variant with the frozen token head; both share the same
-  data, reward definitions, and evaluation path.
-* The scoring head is trained once on the frozen SFT seed and is not updated
-  during RL, so the reward definition does not drift with the policy.
-* CWEval evaluation counts every task in the denominator.  If generation
-  fails, a placeholder file is written so the task is scored as a failure
-  instead of silently dropping out of the benchmark.
 
 ## Third-party components
 
