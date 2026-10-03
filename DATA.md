@@ -96,22 +96,37 @@ used for evaluation here.
 
 ## 5. Downloading the prepared assets
 
+The prepared data is split across three Hugging Face dataset repositories:
+
+| Repository | File | Status |
+|---|---|---|
+| `scgen/SecBaRT-sft` | `train-sft.json` | available |
+| `scgen/SecBaRT-token-labels` | `token_labels_v7_ord.jsonl` | published separately |
+| `scgen/SecBaRT-rl-tasks` | `filtered-test_cases.json` | published separately |
+
 ```bash
-# Hugging Face (replace <ORG> with the organisation that hosts the release)
-huggingface-cli download <ORG>/SecBaRT-data --local-dir data/wcstatic_synthref_merge \
-    train-sft.json token_labels_v7_ord.jsonl
-huggingface-cli download <ORG>/SecBaRT-SecCodePLT-plus --local-dir third_party/SecCodePLT_Plus \
-    filtered-test_cases.json
+# supervised pool
+hf download scgen/SecBaRT-sft train-sft.json --repo-type dataset \
+    --local-dir data/wcstatic_synthref_merge
+
+# token labels
+hf download scgen/SecBaRT-token-labels token_labels_v7_ord.jsonl --repo-type dataset \
+    --local-dir data/wcstatic_synthref_merge
+
+# RL tasks
+hf download scgen/SecBaRT-rl-tasks filtered-test_cases.json --repo-type dataset \
+    --local-dir third_party/SecCodePLT_Plus
 
 # base model
-huggingface-cli download Qwen/Qwen2.5-Coder-7B --local-dir models/Qwen2.5-Coder-7B
+hf download Qwen/Qwen2.5-Coder-7B --local-dir models/Qwen2.5-Coder-7B
 
 # evaluation harness
 git clone https://github.com/Co1lin/CWEval third_party/CWEval
 ```
 
-`scripts/prepare_data.sh` wraps these commands and accepts
-`SECBART_DATA_REPO` / `SECBART_SCPLT_REPO` overrides.
+`scripts/prepare_data.sh` wraps these commands.  Repositories that are not
+published yet are reported and skipped, and each can be mirrored with
+`SECBART_SFT_REPO`, `SECBART_LABELS_REPO`, or `SECBART_SCPLT_REPO`.
 
 ## 6. Licensing
 
